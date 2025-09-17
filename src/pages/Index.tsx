@@ -1,7 +1,8 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Search, MoreVertical, Shield, Star } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ArrowLeft, Search, MoreVertical, Shield, Star, Upload, Image } from "lucide-react";
 import whatsappLogo from "@/assets/whatsapp-logo.png";
 import tiktokLogo from "@/assets/tiktok-logo.png";
 import kwaiLogo from "@/assets/kwai-logo.png";
@@ -63,7 +64,23 @@ const Index = () => {
         <ArrowLeft className="w-6 h-6 text-gray-700" />
         <div className="flex items-center gap-4">
           <Search className="w-6 h-6 text-gray-700" />
-          <MoreVertical className="w-6 h-6 text-gray-700" />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="p-0">
+                <MoreVertical className="w-6 h-6 text-gray-700" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
+                <Upload className="w-4 h-4 mr-2" />
+                Carregar APK
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => iconInputRef.current?.click()}>
+                <Image className="w-4 h-4 mr-2" />
+                Alterar Logo
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -157,9 +174,8 @@ const Index = () => {
           
           <Button 
             className="flex-1 py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-full"
-            onClick={() => fileInputRef.current?.click()}
           >
-            Desinstalar
+            Instalar
           </Button>
           
           <Input
