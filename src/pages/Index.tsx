@@ -3,18 +3,31 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Star, Download, Shield, Users } from "lucide-react";
+import { Star, Download, Shield, Users, Image, Upload } from "lucide-react";
 
 const Index = () => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [appIcon, setAppIcon] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const iconInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && file.name.endsWith('.apk')) {
       setUploadedFile(file);
+    }
+  };
+
+  const handleIconUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && (file.type.startsWith('image/'))) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setAppIcon(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -68,108 +81,128 @@ const Index = () => {
 
         {/* Card principal */}
         <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-          {!uploadedFile ? (
-            /* Área de upload */
-            <div className="text-center">
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 mb-4 hover:border-green-400 transition-colors">
-                <Download className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <Label htmlFor="apk-upload" className="cursor-pointer">
-                  <span className="text-lg font-medium text-gray-700">Selecione seu arquivo APK</span>
-                  <p className="text-sm text-gray-500 mt-2">Clique aqui para fazer upload do seu aplicativo</p>
-                </Label>
-                <Input
-                  id="apk-upload"
-                  type="file"
-                  accept=".apk"
-                  className="hidden"
-                  ref={fileInputRef}
-                  onChange={handleFileUpload}
+          {/* App Icon Section */}
+          <div className="flex items-start gap-4 mb-6">
+            <div className="relative">
+              {appIcon ? (
+                <img 
+                  src={appIcon} 
+                  alt="App Icon" 
+                  className="w-20 h-20 rounded-xl object-cover"
                 />
-              </div>
-              <Button 
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg transition-all duration-200 hover:scale-105"
-              >
-                Escolher Arquivo APK
-              </Button>
-            </div>
-          ) : (
-            /* Informações do app e download */
-            <div>
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-blue-600 rounded-xl flex items-center justify-center">
-                  <Download className="w-8 h-8 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">{uploadedFile.name}</h2>
-                  <p className="text-sm text-gray-600">Aplicativo Android</p>
-                </div>
-              </div>
-
-              {/* Informações do app */}
-              <div className="space-y-4 mb-6">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-700">Versão:</span>
-                  <span className="text-sm text-gray-600">1.0.0</span>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1">
-                    {[1,2,3,4,5].map((star) => (
-                      <Star key={star} className={`w-4 h-4 ${star <= 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
-                    ))}
-                  </div>
-                  <span className="text-sm text-gray-600">4.7 de 5 estrelas</span>
-                </div>
-
-                <div className="flex items-center gap-4 text-sm text-gray-600">
-                  <div className="flex items-center gap-1">
-                    <Users className="w-4 h-4" />
-                    <span>10K+ downloads</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Shield className="w-4 h-4" />
-                    <span>Seguro</span>
-                  </div>
-                </div>
-
-                <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">
-                  Baixe agora para aproveitar todas as funcionalidades incríveis deste aplicativo.
-                </p>
-              </div>
-
-              {/* Botão de download */}
-              {!isDownloading ? (
-                <Button 
-                  onClick={handleDownload}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-lg transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl"
-                >
-                  <Download className="w-5 h-5 mr-2" />
-                  Iniciar Download
-                </Button>
               ) : (
-                <div className="space-y-3">
-                  <div className="w-full bg-gray-200 rounded-full h-3">
+                <div 
+                  onClick={() => iconInputRef.current?.click()}
+                  className="w-20 h-20 bg-gradient-to-br from-green-500 to-blue-600 rounded-xl flex items-center justify-center cursor-pointer hover:scale-105 transition-all"
+                >
+                  <Image className="w-8 h-8 text-white" />
+                </div>
+              )}
+              <Input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                ref={iconInputRef}
+                onChange={handleIconUpload}
+              />
+            </div>
+            
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                {uploadedFile ? uploadedFile.name.replace('.apk', '') : 'Meu Aplicativo'}
+              </h2>
+              <p className="text-blue-600 font-medium mb-2">Minha Empresa</p>
+              <p className="text-gray-600 text-sm mb-2">
+                {uploadedFile ? 'Pronto para download' : 'Aguardando APK...'}
+              </p>
+              <div className="flex items-center gap-1 text-sm text-gray-600">
+                <Shield className="w-4 h-4 text-green-600" />
+                <span>Verificado por Play Protect</span>
+              </div>
+            </div>
+          </div>
+
+          {/* APK Upload Section */}
+          <div className="mb-6">
+            <Label className="text-sm font-medium text-gray-700 mb-2 block">
+              Arquivo APK
+            </Label>
+            {!uploadedFile ? (
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 transition-colors"
+              >
+                <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                <p className="text-gray-600">Clique para selecionar o arquivo APK</p>
+                <p className="text-xs text-gray-500 mt-1">Apenas arquivos .apk são aceitos</p>
+              </div>
+            ) : (
+              <div className="bg-gray-50 rounded-lg p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                    <Download className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">{uploadedFile.name}</p>
+                    <p className="text-xs text-gray-500">APK • {(uploadedFile.size / 1024 / 1024).toFixed(1)} MB</p>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setUploadedFile(null)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  Remover
+                </Button>
+              </div>
+            )}
+            <Input
+              type="file"
+              accept=".apk"
+              className="hidden"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+            />
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3">
+            <Button 
+              variant="outline" 
+              className="flex-1 py-3 text-blue-600 border-blue-200 hover:bg-blue-50"
+              onClick={() => {
+                setUploadedFile(null);
+                setAppIcon(null);
+              }}
+            >
+              Cancelar
+            </Button>
+            
+            {!isDownloading ? (
+              <Button 
+                onClick={handleDownload}
+                disabled={!uploadedFile}
+                className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {uploadedFile ? 'Baixar' : 'Selecione APK'}
+              </Button>
+            ) : (
+              <div className="flex-1">
+                <div className="mb-2">
+                  <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
-                      className="bg-green-600 h-3 rounded-full transition-all duration-300"
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                       style={{ width: `${downloadProgress}%` }}
                     ></div>
                   </div>
-                  <p className="text-center text-sm text-gray-600 font-medium">
-                    Baixando... {Math.round(downloadProgress)}%
-                  </p>
                 </div>
-              )}
-
-              <Button 
-                variant="outline" 
-                onClick={() => setUploadedFile(null)}
-                className="w-full mt-3 border-gray-300 text-gray-600 hover:bg-gray-50"
-              >
-                Escolher Outro Arquivo
-              </Button>
-            </div>
-          )}
+                <p className="text-center text-sm text-gray-600">
+                  Baixando... {Math.round(downloadProgress)}%
+                </p>
+              </div>
+            )}
+          </div>
         </Card>
 
         {/* Rodapé */}
