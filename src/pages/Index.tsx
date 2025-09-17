@@ -1,15 +1,12 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Star, Download, Shield, Users, Image, Upload } from "lucide-react";
+import { ArrowLeft, Search, MoreVertical, Shield, Star } from "lucide-react";
 
 const Index = () => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [appIcon, setAppIcon] = useState<string | null>(null);
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [progress, setProgress] = useState(75);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const iconInputRef = useRef<HTMLInputElement>(null);
 
@@ -22,7 +19,7 @@ const Index = () => {
 
   const handleIconUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && (file.type.startsWith('image/'))) {
+    if (file && file.type.startsWith('image/')) {
       const reader = new FileReader();
       reader.onload = (e) => {
         setAppIcon(e.target?.result as string);
@@ -31,186 +28,225 @@ const Index = () => {
     }
   };
 
-  const handleDownload = () => {
-    if (!uploadedFile) return;
-    
-    setIsDownloading(true);
-    setDownloadProgress(0);
-    
-    // Simular progresso de download
-    const interval = setInterval(() => {
-      setDownloadProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          // Iniciar download real do arquivo
-          const url = URL.createObjectURL(uploadedFile);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = uploadedFile.name;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-          
-          setTimeout(() => {
-            setIsDownloading(false);
-            setDownloadProgress(0);
-          }, 1000);
-          
-          return 100;
-        }
-        return prev + Math.random() * 15;
-      });
-    }, 100);
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-8 px-4">
-      <div className="max-w-md mx-auto">
-        {/* Header da Play Store */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg flex items-center justify-center">
-              <Download className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-gray-800">Play Store</span>
+    <div className="min-h-screen bg-white">
+      {/* Status Bar */}
+      <div className="flex justify-between items-center px-4 py-2 text-sm font-medium bg-white">
+        <span>22:43</span>
+        <div className="flex items-center gap-1">
+          <div className="flex gap-1">
+            <div className="w-1 h-3 bg-black rounded-full"></div>
+            <div className="w-1 h-3 bg-black rounded-full"></div>
+            <div className="w-1 h-3 bg-gray-300 rounded-full"></div>
+            <div className="w-1 h-3 bg-gray-300 rounded-full"></div>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Download do Aplicativo</h1>
-          <p className="text-gray-600">O download do aplicativo está pronto para iniciar!</p>
+          <div className="ml-2">
+            <svg width="18" height="12" viewBox="0 0 18 12" className="text-black">
+              <path fill="currentColor" d="M1 4h16v4H1z"/>
+              <path fill="currentColor" d="M0 2h18v8H0z" fillOpacity="0.3"/>
+            </svg>
+          </div>
+          <div className="ml-2 w-6 h-3 border border-black rounded-sm relative">
+            <div className="absolute right-0 top-0 w-4 h-full bg-black rounded-sm"></div>
+          </div>
         </div>
+      </div>
 
-        {/* Card principal */}
-        <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-          {/* App Icon Section */}
-          <div className="flex items-start gap-4 mb-6">
-            <div className="relative">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+        <ArrowLeft className="w-6 h-6 text-gray-700" />
+        <div className="flex items-center gap-4">
+          <Search className="w-6 h-6 text-gray-700" />
+          <MoreVertical className="w-6 h-6 text-gray-700" />
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="px-4 py-6">
+        {/* App Info Section */}
+        <div className="flex items-start gap-4 mb-8">
+          {/* App Icon with Progress Circle */}
+          <div className="relative">
+            <svg className="w-24 h-24 -rotate-90" viewBox="0 0 96 96">
+              {/* Background circle */}
+              <circle 
+                cx="48" 
+                cy="48" 
+                r="46" 
+                stroke="#e5e7eb" 
+                strokeWidth="4" 
+                fill="none"
+              />
+              {/* Progress circle */}
+              <circle 
+                cx="48" 
+                cy="48" 
+                r="46" 
+                stroke="#3b82f6" 
+                strokeWidth="4" 
+                fill="none"
+                strokeDasharray={`${2 * Math.PI * 46}`}
+                strokeDashoffset={`${2 * Math.PI * 46 * (1 - progress / 100)}`}
+                className="transition-all duration-300"
+              />
+            </svg>
+            
+            <div 
+              className="absolute inset-2 rounded-2xl cursor-pointer overflow-hidden"
+              onClick={() => iconInputRef.current?.click()}
+            >
               {appIcon ? (
                 <img 
                   src={appIcon} 
                   alt="App Icon" 
-                  className="w-20 h-20 rounded-xl object-cover"
+                  className="w-full h-full object-cover"
                 />
               ) : (
-                <div 
-                  onClick={() => iconInputRef.current?.click()}
-                  className="w-20 h-20 bg-gradient-to-br from-green-500 to-blue-600 rounded-xl flex items-center justify-center cursor-pointer hover:scale-105 transition-all"
-                >
-                  <Image className="w-8 h-8 text-white" />
+                <div className="w-full h-full bg-green-500 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" className="w-12 h-12 text-white fill-current">
+                    <path d="M16.75 2C17.99 2 19 3.01 19 4.25v15.5C19 20.99 17.99 22 16.75 22H7.25C6.01 22 5 20.99 5 19.75V4.25C5 3.01 6.01 2 7.25 2h9.5zm-4.5 15c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm3-11c0-.55-.45-1-1-1H9.75c-.55 0-1 .45-1 1v8c0 .55.45 1 1 1h4.5c.55 0 1-.45 1-1V6z"/>
+                  </svg>
                 </div>
               )}
-              <Input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                ref={iconInputRef}
-                onChange={handleIconUpload}
-              />
             </div>
             
-            <div className="flex-1">
-              <h2 className="text-2xl font-bold text-gray-900 mb-1">
-                {uploadedFile ? uploadedFile.name.replace('.apk', '') : 'Meu Aplicativo'}
-              </h2>
-              <p className="text-blue-600 font-medium mb-2">Minha Empresa</p>
-              <p className="text-gray-600 text-sm mb-2">
-                {uploadedFile ? 'Pronto para download' : 'Aguardando APK...'}
-              </p>
-              <div className="flex items-center gap-1 text-sm text-gray-600">
-                <Shield className="w-4 h-4 text-green-600" />
-                <span>Verificado por Play Protect</span>
-              </div>
-            </div>
-          </div>
-
-          {/* APK Upload Section */}
-          <div className="mb-6">
-            <Label className="text-sm font-medium text-gray-700 mb-2 block">
-              Arquivo APK
-            </Label>
-            {!uploadedFile ? (
-              <div 
-                onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 transition-colors"
-              >
-                <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-gray-600">Clique para selecionar o arquivo APK</p>
-                <p className="text-xs text-gray-500 mt-1">Apenas arquivos .apk são aceitos</p>
-              </div>
-            ) : (
-              <div className="bg-gray-50 rounded-lg p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                    <Download className="w-5 h-5 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{uploadedFile.name}</p>
-                    <p className="text-xs text-gray-500">APK • {(uploadedFile.size / 1024 / 1024).toFixed(1)} MB</p>
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setUploadedFile(null)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  Remover
-                </Button>
-              </div>
-            )}
             <Input
               type="file"
-              accept=".apk"
+              accept="image/*"
               className="hidden"
-              ref={fileInputRef}
-              onChange={handleFileUpload}
+              ref={iconInputRef}
+              onChange={handleIconUpload}
             />
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-3">
-            <Button 
-              variant="outline" 
-              className="flex-1 py-3 text-blue-600 border-blue-200 hover:bg-blue-50"
-              onClick={() => {
-                setUploadedFile(null);
-                setAppIcon(null);
-              }}
-            >
-              Cancelar
-            </Button>
+          {/* App Details */}
+          <div className="flex-1">
+            <h1 className="text-2xl font-medium text-gray-900 mb-1">
+              {uploadedFile ? uploadedFile.name.replace('.apk', '') : 'WhatsApp Messenger'}
+            </h1>
+            <p className="text-blue-600 font-medium mb-2">
+              {uploadedFile ? 'Minha Empresa' : 'WhatsApp LLC'}
+            </p>
+            <p className="text-gray-600 text-sm mb-3">Pendente...</p>
             
-            {!isDownloading ? (
-              <Button 
-                onClick={handleDownload}
-                disabled={!uploadedFile}
-                className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {uploadedFile ? 'Baixar' : 'Selecione APK'}
-              </Button>
-            ) : (
-              <div className="flex-1">
-                <div className="mb-2">
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${downloadProgress}%` }}
-                    ></div>
-                  </div>
-                </div>
-                <p className="text-center text-sm text-gray-600">
-                  Baixando... {Math.round(downloadProgress)}%
-                </p>
-              </div>
-            )}
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <Shield className="w-4 h-4 text-green-600" />
+              <span>Verificado por Play Protect</span>
+            </div>
           </div>
-        </Card>
+        </div>
 
-        {/* Rodapé */}
-        <div className="text-center mt-8">
-          <p className="text-sm text-gray-500 flex items-center justify-center gap-2">
-            <Shield className="w-4 h-4" />
-            Este é um link seguro, não se preocupe.
-          </p>
+        {/* Action Buttons */}
+        <div className="flex gap-3 mb-8">
+          <Button 
+            variant="outline" 
+            className="flex-1 py-3 px-6 text-blue-600 border-gray-300 hover:bg-gray-50 rounded-full"
+            onClick={() => {
+              setUploadedFile(null);
+              setAppIcon(null);
+            }}
+          >
+            Cancelar
+          </Button>
+          
+          <Button 
+            className="flex-1 py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-full"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            Desinstalar
+          </Button>
+          
+          <Input
+            type="file"
+            accept=".apk"
+            className="hidden"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+          />
+        </div>
+
+        {/* App Suggestions */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <span className="text-gray-600 text-sm">Anúncios</span>
+              <span className="text-gray-400">•</span>
+              <span className="text-lg font-medium text-gray-900">Sugestões para você</span>
+            </div>
+            <MoreVertical className="w-5 h-5 text-gray-600" />
+          </div>
+          
+          <div className="flex gap-4 overflow-x-auto pb-2">
+            <div className="flex-shrink-0">
+              <div className="w-16 h-16 bg-black rounded-2xl mb-2 flex items-center justify-center">
+                <div className="text-white text-xs font-bold">TT</div>
+              </div>
+              <p className="text-sm font-medium mb-1">TikTok Lite</p>
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-gray-600">4,4</span>
+                <Star className="w-3 h-3 text-yellow-500 fill-current" />
+              </div>
+            </div>
+            
+            <div className="flex-shrink-0">
+              <div className="w-16 h-16 bg-orange-500 rounded-2xl mb-2 flex items-center justify-center">
+                <div className="text-white text-lg">🎬</div>
+              </div>
+              <p className="text-sm font-medium mb-1">Kwai - Ver Vídeos Bacanas</p>
+              <div className="flex items-center gap-1 text-xs text-gray-600">
+                <span>📱 Instalado</span>
+              </div>
+            </div>
+            
+            <div className="flex-shrink-0">
+              <div className="w-16 h-16 bg-orange-600 rounded-2xl mb-2 flex items-center justify-center">
+                <div className="text-white text-lg">🛍️</div>
+              </div>
+              <p className="text-sm font-medium mb-1">Shopee: 8.8 Liquida Moda</p>
+              <div className="flex items-center gap-1 text-xs text-gray-600">
+                <span>📱 Instalado</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* More Apps Section */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-lg font-medium text-gray-900">Mais apps para você testar</span>
+            <ArrowLeft className="w-5 h-5 text-gray-600 rotate-180" />
+          </div>
+          
+          <div className="flex gap-4 overflow-x-auto">
+            <div className="flex-shrink-0">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl mb-2"></div>
+              <p className="text-sm font-medium mb-1">FaceApp: Editor facial</p>
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-gray-600">4,3</span>
+                <Star className="w-3 h-3 text-yellow-500 fill-current" />
+              </div>
+            </div>
+            
+            <div className="flex-shrink-0">
+              <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl mb-2"></div>
+              <p className="text-sm font-medium mb-1">Sweet Selfie Câmera e Editor</p>
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-gray-600">4,5</span>
+                <Star className="w-3 h-3 text-yellow-500 fill-current" />
+              </div>
+            </div>
+            
+            <div className="flex-shrink-0">
+              <div className="w-16 h-16 bg-blue-600 rounded-2xl mb-2 flex items-center justify-center">
+                <div className="text-white text-lg font-bold">f</div>
+              </div>
+              <p className="text-sm font-medium mb-1">Facebook</p>
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-gray-600">3,9</span>
+                <Star className="w-3 h-3 text-yellow-500 fill-current" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
