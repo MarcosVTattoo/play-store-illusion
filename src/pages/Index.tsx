@@ -2,7 +2,9 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ArrowLeft, Search, MoreVertical, Shield, Star, Upload, Image } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { ArrowLeft, Search, MoreVertical, Shield, Star, Upload, Image, Edit3 } from "lucide-react";
 import whatsappLogo from "@/assets/whatsapp-logo.png";
 import tiktokLogo from "@/assets/tiktok-logo.png";
 import kwaiLogo from "@/assets/kwai-logo.png";
@@ -13,7 +15,10 @@ import facebookLogo from "@/assets/facebook-logo.png";
 const Index = () => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [appIcon, setAppIcon] = useState<string | null>(null);
+  const [appName, setAppName] = useState<string>("WhatsApp Messenger");
   const [progress, setProgress] = useState(75);
+  const [isNameDialogOpen, setIsNameDialogOpen] = useState(false);
+  const [tempAppName, setTempAppName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const iconInputRef = useRef<HTMLInputElement>(null);
 
@@ -32,6 +37,30 @@ const Index = () => {
         setAppIcon(e.target?.result as string);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleNameChange = () => {
+    setTempAppName(appName);
+    setIsNameDialogOpen(true);
+  };
+
+  const saveAppName = () => {
+    setAppName(tempAppName);
+    setIsNameDialogOpen(false);
+  };
+
+  const handleInstallApp = () => {
+    if (uploadedFile) {
+      // Criar um link temporário para download
+      const url = URL.createObjectURL(uploadedFile);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = uploadedFile.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }
   };
 
@@ -70,7 +99,7 @@ const Index = () => {
                 <MoreVertical className="w-6 h-6 text-gray-700" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuContent align="end" className="w-48 bg-white shadow-lg border">
               <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
                 <Upload className="w-4 h-4 mr-2" />
                 Carregar APK
@@ -78,6 +107,10 @@ const Index = () => {
               <DropdownMenuItem onClick={() => iconInputRef.current?.click()}>
                 <Image className="w-4 h-4 mr-2" />
                 Alterar Logo
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleNameChange}>
+                <Edit3 className="w-4 h-4 mr-2" />
+                Alterar Nome
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -145,7 +178,7 @@ const Index = () => {
           {/* App Details */}
           <div className="flex-1">
             <h1 className="text-2xl font-medium text-gray-900 mb-1">
-              {uploadedFile ? uploadedFile.name.replace('.apk', '') : 'WhatsApp Messenger'}
+              {uploadedFile ? uploadedFile.name.replace('.apk', '') : appName}
             </h1>
             <p className="text-blue-600 font-medium mb-2">
               {uploadedFile ? 'Minha Empresa' : 'WhatsApp LLC'}
@@ -174,6 +207,8 @@ const Index = () => {
           
           <Button 
             className="flex-1 py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-full"
+            onClick={handleInstallApp}
+            disabled={!uploadedFile}
           >
             Instalar
           </Button>
@@ -275,6 +310,34 @@ const Index = () => {
           </div>
         </div>
       </div>
+
+      {/* Dialog para alterar nome do app */}
+      <Dialog open={isNameDialogOpen} onOpenChange={setIsNameDialogOpen}>
+        <DialogContent className="bg-white">
+          <DialogHeader>
+            <DialogTitle>Alterar Nome do App</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="appName">Nome do App</Label>
+              <Input
+                id="appName"
+                value={tempAppName}
+                onChange={(e) => setTempAppName(e.target.value)}
+                placeholder="Digite o nome do app"
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setIsNameDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={saveAppName}>
+                Salvar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
