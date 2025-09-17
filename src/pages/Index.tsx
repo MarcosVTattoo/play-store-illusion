@@ -2,6 +2,12 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Search, MoreVertical, Shield, Star } from "lucide-react";
+import whatsappLogo from "@/assets/whatsapp-logo.png";
+import tiktokLogo from "@/assets/tiktok-logo.png";
+import kwaiLogo from "@/assets/kwai-logo.png";
+import shopeeLogo from "@/assets/shopee-logo.png";
+import faceappLogo from "@/assets/faceapp-logo.png";
+import facebookLogo from "@/assets/facebook-logo.png";
 
 const Index = () => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -29,7 +35,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white max-w-sm mx-auto">
       {/* Status Bar */}
       <div className="flex justify-between items-center px-4 py-2 text-sm font-medium bg-white">
         <span>22:43</span>
@@ -102,11 +108,11 @@ const Index = () => {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-green-500 flex items-center justify-center">
-                  <svg viewBox="0 0 24 24" className="w-12 h-12 text-white fill-current">
-                    <path d="M16.75 2C17.99 2 19 3.01 19 4.25v15.5C19 20.99 17.99 22 16.75 22H7.25C6.01 22 5 20.99 5 19.75V4.25C5 3.01 6.01 2 7.25 2h9.5zm-4.5 15c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm3-11c0-.55-.45-1-1-1H9.75c-.55 0-1 .45-1 1v8c0 .55.45 1 1 1h4.5c.55 0 1-.45 1-1V6z"/>
-                  </svg>
-                </div>
+                <img 
+                  src={whatsappLogo}
+                  alt="WhatsApp" 
+                  className="w-full h-full object-cover"
+                />
               )}
             </div>
             
@@ -178,10 +184,10 @@ const Index = () => {
           
           <div className="flex gap-4 overflow-x-auto pb-2">
             <div className="flex-shrink-0">
-              <div className="w-16 h-16 bg-black rounded-2xl mb-2 flex items-center justify-center">
-                <div className="text-white text-xs font-bold">TT</div>
+              <div className="w-16 h-16 rounded-2xl mb-2 overflow-hidden">
+                <img src={tiktokLogo} alt="TikTok" className="w-full h-full object-cover" />
               </div>
-              <p className="text-sm font-medium mb-1">TikTok Lite</p>
+              <p className="text-sm font-medium mb-1 w-16">TikTok Lite</p>
               <div className="flex items-center gap-1">
                 <span className="text-xs text-gray-600">4,4</span>
                 <Star className="w-3 h-3 text-yellow-500 fill-current" />
@@ -189,20 +195,20 @@ const Index = () => {
             </div>
             
             <div className="flex-shrink-0">
-              <div className="w-16 h-16 bg-orange-500 rounded-2xl mb-2 flex items-center justify-center">
-                <div className="text-white text-lg">🎬</div>
+              <div className="w-16 h-16 rounded-2xl mb-2 overflow-hidden">
+                <img src={kwaiLogo} alt="Kwai" className="w-full h-full object-cover" />
               </div>
-              <p className="text-sm font-medium mb-1">Kwai - Ver Vídeos Bacanas</p>
+              <p className="text-sm font-medium mb-1 w-20 text-wrap leading-tight">Kwai - Ver Vídeos Bacanas</p>
               <div className="flex items-center gap-1 text-xs text-gray-600">
                 <span>📱 Instalado</span>
               </div>
             </div>
             
             <div className="flex-shrink-0">
-              <div className="w-16 h-16 bg-orange-600 rounded-2xl mb-2 flex items-center justify-center">
-                <div className="text-white text-lg">🛍️</div>
+              <div className="w-16 h-16 rounded-2xl mb-2 overflow-hidden">
+                <img src={shopeeLogo} alt="Shopee" className="w-full h-full object-cover" />
               </div>
-              <p className="text-sm font-medium mb-1">Shopee: 8.8 Liquida Moda</p>
+              <p className="text-sm font-medium mb-1 w-20 text-wrap leading-tight">Shopee: 8.8 Liquida Moda</p>
               <div className="flex items-center gap-1 text-xs text-gray-600">
                 <span>📱 Instalado</span>
               </div>
@@ -219,8 +225,10 @@ const Index = () => {
           
           <div className="flex gap-4 overflow-x-auto">
             <div className="flex-shrink-0">
-              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl mb-2"></div>
-              <p className="text-sm font-medium mb-1">FaceApp: Editor facial</p>
+              <div className="w-16 h-16 rounded-2xl mb-2 overflow-hidden">
+                <img src={faceappLogo} alt="FaceApp" className="w-full h-full object-cover" />
+              </div>
+              <p className="text-sm font-medium mb-1 w-16 text-wrap leading-tight">FaceApp: Editor facial</p>
               <div className="flex items-center gap-1">
                 <span className="text-xs text-gray-600">4,3</span>
                 <Star className="w-3 h-3 text-yellow-500 fill-current" />
@@ -228,8 +236,10 @@ const Index = () => {
             </div>
             
             <div className="flex-shrink-0">
-              <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl mb-2"></div>
-              <p className="text-sm font-medium mb-1">Sweet Selfie Câmera e Editor</p>
+              <div className="w-16 h-16 rounded-2xl mb-2 overflow-hidden bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
+                <span className="text-white text-lg">📸</span>
+              </div>
+              <p className="text-sm font-medium mb-1 w-20 text-wrap leading-tight">Sweet Selfie Câmera e Editor</p>
               <div className="flex items-center gap-1">
                 <span className="text-xs text-gray-600">4,5</span>
                 <Star className="w-3 h-3 text-yellow-500 fill-current" />
@@ -237,10 +247,10 @@ const Index = () => {
             </div>
             
             <div className="flex-shrink-0">
-              <div className="w-16 h-16 bg-blue-600 rounded-2xl mb-2 flex items-center justify-center">
-                <div className="text-white text-lg font-bold">f</div>
+              <div className="w-16 h-16 rounded-2xl mb-2 overflow-hidden">
+                <img src={facebookLogo} alt="Facebook" className="w-full h-full object-cover" />
               </div>
-              <p className="text-sm font-medium mb-1">Facebook</p>
+              <p className="text-sm font-medium mb-1 w-16">Facebook</p>
               <div className="flex items-center gap-1">
                 <span className="text-xs text-gray-600">3,9</span>
                 <Star className="w-3 h-3 text-yellow-500 fill-current" />
