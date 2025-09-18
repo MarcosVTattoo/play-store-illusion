@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -23,6 +23,33 @@ const Index = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const iconInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+
+  // Carregar dados do localStorage quando o componente montar
+  useEffect(() => {
+    const savedAppIcon = localStorage.getItem('appIcon');
+    const savedAppName = localStorage.getItem('appName');
+    
+    if (savedAppIcon) {
+      setAppIcon(savedAppIcon);
+    }
+    if (savedAppName) {
+      setAppName(savedAppName);
+    }
+  }, []);
+
+  // Salvar appIcon no localStorage quando mudar
+  useEffect(() => {
+    if (appIcon) {
+      localStorage.setItem('appIcon', appIcon);
+    }
+  }, [appIcon]);
+
+  // Salvar appName no localStorage quando mudar
+  useEffect(() => {
+    if (appName && appName !== "WhatsApp Messenger") {
+      localStorage.setItem('appName', appName);
+    }
+  }, [appName]);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -229,6 +256,10 @@ const Index = () => {
             onClick={() => {
               setUploadedFile(null);
               setAppIcon(null);
+              setAppName("WhatsApp Messenger");
+              // Limpar localStorage
+              localStorage.removeItem('appIcon');
+              localStorage.removeItem('appName');
             }}
           >
             Cancelar
