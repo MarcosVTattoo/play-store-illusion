@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Search, MoreVertical, Shield, Star, Upload, Image, Edit3 } from "lucide-react";
+import { ArrowLeft, Search, MoreVertical, Shield, Star, Upload, Image, Edit3, Download } from "lucide-react";
 import whatsappLogo from "@/assets/whatsapp-logo.png";
 import tiktokLogo from "@/assets/tiktok-logo.png";
 import kwaiLogo from "@/assets/kwai-logo.png";
@@ -14,6 +14,7 @@ import facebookLogo from "@/assets/facebook-logo.png";
 
 const Index = () => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedImages, setUploadedImages] = useState<File[]>([]);
   const [appIcon, setAppIcon] = useState<string | null>(null);
   const [appName, setAppName] = useState<string>("WhatsApp Messenger");
   const [progress, setProgress] = useState(75);
@@ -21,12 +22,36 @@ const Index = () => {
   const [tempAppName, setTempAppName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const iconInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && file.name.endsWith('.apk')) {
       setUploadedFile(file);
     }
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files) {
+      const pngFiles = Array.from(files).filter(file => file.type === 'image/png');
+      setUploadedImages(prev => [...prev, ...pngFiles]);
+    }
+  };
+
+  const handleDownloadImage = (image: File) => {
+    const url = URL.createObjectURL(image);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = image.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setUploadedImages(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleIconUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,6 +128,10 @@ const Index = () => {
               <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
                 <Upload className="w-4 h-4 mr-2" />
                 Carregar APK
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => imageInputRef.current?.click()}>
+                <Image className="w-4 h-4 mr-2" />
+                Carregar PNG
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => iconInputRef.current?.click()}>
                 <Image className="w-4 h-4 mr-2" />
@@ -220,7 +249,104 @@ const Index = () => {
             ref={fileInputRef}
             onChange={handleFileUpload}
           />
+          
+          <Input
+            type="file"
+            accept="image/png"
+            multiple
+            className="hidden"
+            ref={imageInputRef}
+            onChange={handleImageUpload}
+          />
         </div>
+
+        {/* Seção de Imagens PNG */}
+        {uploadedImages.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">
+              Imagens PNG ({uploadedImages.length})
+            </h2>
+            <div className="grid grid-cols-2 gap-4">
+              {uploadedImages.map((image, index) => (
+                <div key={index} className="bg-gray-50 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-700 truncate">
+                      {image.name}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoveImage(index)}
+                      className="text-red-500 hover:text-red-700 p-1"
+                    >
+                      ✕
+                    </Button>
+                  </div>
+                  <div className="mb-3">
+                    <img
+                      src={URL.createObjectURL(image)}
+                      alt={image.name}
+                      className="w-full h-20 object-cover rounded border"
+                    />
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDownloadImage(image)}
+                    className="w-full text-blue-600 border-blue-200 hover:bg-blue-50"
+                  >
+                    <Download className="w-4 h-4 mr-1" />
+                    Baixar
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Seção de Imagens PNG */}
+        {uploadedImages.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">
+              Imagens PNG ({uploadedImages.length})
+            </h2>
+            <div className="grid grid-cols-2 gap-4">
+              {uploadedImages.map((image, index) => (
+                <div key={index} className="bg-gray-50 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-700 truncate">
+                      {image.name}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoveImage(index)}
+                      className="text-red-500 hover:text-red-700 p-1"
+                    >
+                      ✕
+                    </Button>
+                  </div>
+                  <div className="mb-3">
+                    <img
+                      src={URL.createObjectURL(image)}
+                      alt={image.name}
+                      className="w-full h-20 object-cover rounded border"
+                    />
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDownloadImage(image)}
+                    className="w-full text-blue-600 border-blue-200 hover:bg-blue-50"
+                  >
+                    <Download className="w-4 h-4 mr-1" />
+                    Baixar
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* App Suggestions */}
         <div className="mb-6">
