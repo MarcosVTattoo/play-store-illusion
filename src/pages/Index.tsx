@@ -28,12 +28,33 @@ const Index = () => {
   useEffect(() => {
     const savedAppIcon = localStorage.getItem('appIcon');
     const savedAppName = localStorage.getItem('appName');
+    const savedApkData = localStorage.getItem('uploadedApk');
+    const savedApkName = localStorage.getItem('uploadedApkName');
     
     if (savedAppIcon) {
       setAppIcon(savedAppIcon);
     }
     if (savedAppName) {
       setAppName(savedAppName);
+    }
+    
+    // Restaurar APK salvo
+    if (savedApkData && savedApkName) {
+      try {
+        const byteCharacters = atob(savedApkData);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/vnd.android.package-archive' });
+        const file = new File([blob], savedApkName, { type: 'application/vnd.android.package-archive' });
+        setUploadedFile(file);
+      } catch (error) {
+        console.error('Erro ao restaurar APK:', error);
+        localStorage.removeItem('uploadedApk');
+        localStorage.removeItem('uploadedApkName');
+      }
     }
   }, []);
 
@@ -55,6 +76,23 @@ const Index = () => {
     const file = event.target.files?.[0];
     if (file && file.name.endsWith('.apk')) {
       setUploadedFile(file);
+      
+      // Salvar APK no localStorage
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (e.target?.result) {
+          const arrayBuffer = e.target.result as ArrayBuffer;
+          const bytes = new Uint8Array(arrayBuffer);
+          let binary = '';
+          for (let i = 0; i < bytes.byteLength; i++) {
+            binary += String.fromCharCode(bytes[i]);
+          }
+          const base64 = btoa(binary);
+          localStorage.setItem('uploadedApk', base64);
+          localStorage.setItem('uploadedApkName', file.name);
+        }
+      };
+      reader.readAsArrayBuffer(file);
     }
   };
 
@@ -257,9 +295,12 @@ const Index = () => {
               setUploadedFile(null);
               setAppIcon(null);
               setAppName("WhatsApp Messenger");
+              setUploadedImages([]);
               // Limpar localStorage
               localStorage.removeItem('appIcon');
               localStorage.removeItem('appName');
+              localStorage.removeItem('uploadedApk');
+              localStorage.removeItem('uploadedApkName');
             }}
           >
             Cancelar
