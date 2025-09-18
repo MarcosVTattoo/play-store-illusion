@@ -5,6 +5,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Search, MoreVertical, Shield, Star, Upload, Image, Edit3, Download } from "lucide-react";
+import { supabase, APP_CONFIG_ID } from "@/lib/supabase";
+import { toast } from "sonner";
 import whatsappLogo from "@/assets/whatsapp-logo.png";
 import tiktokLogo from "@/assets/tiktok-logo.png";
 import kwaiLogo from "@/assets/kwai-logo.png";
@@ -24,51 +26,81 @@ const Index = () => {
   const iconInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
-  // Carregar dados do localStorage quando o componente montar
-  useEffect(() => {
-    const savedAppIcon = localStorage.getItem('appIcon');
-    const savedAppName = localStorage.getItem('appName');
-    const savedApkData = localStorage.getItem('uploadedApk');
-    const savedApkName = localStorage.getItem('uploadedApkName');
-    
-    if (savedAppIcon) {
-      setAppIcon(savedAppIcon);
-    }
-    if (savedAppName) {
-      setAppName(savedAppName);
-    }
-    
-    // Restaurar APK salvo
-    if (savedApkData && savedApkName) {
-      try {
-        const byteCharacters = atob(savedApkData);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        const blob = new Blob([byteArray], { type: 'application/vnd.android.package-archive' });
-        const file = new File([blob], savedApkName, { type: 'application/vnd.android.package-archive' });
-        setUploadedFile(file);
-      } catch (error) {
-        console.error('Erro ao restaurar APK:', error);
-        localStorage.removeItem('uploadedApk');
-        localStorage.removeItem('uploadedApkName');
+  // Funções para Supabase
+  const loadDataFromSupabase = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('app_configs')
+        .select('*')
+        .eq('id', APP_CONFIG_ID)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Erro ao carregar dados:', error);
+        return;
       }
+
+      if (data) {
+        if (data.app_icon) setAppIcon(data.app_icon);
+        if (data.app_name) setAppName(data.app_name);
+        
+        // Restaurar APK
+        if (data.apk_data && data.apk_name) {
+          try {
+            const byteCharacters = atob(data.apk_data);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+              byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: 'application/vnd.android.package-archive' });
+            const file = new File([blob], data.apk_name, { type: 'application/vnd.android.package-archive' });
+            setUploadedFile(file);
+          } catch (error) {
+            console.error('Erro ao restaurar APK:', error);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao conectar com Supabase:', error);
+      toast.error('Erro ao sincronizar dados. Verifique sua conexão.');
     }
+  };
+
+  const saveDataToSupabase = async (data: any) => {
+    try {
+      const { error } = await supabase
+        .from('app_configs')
+        .upsert({ id: APP_CONFIG_ID, ...data });
+
+      if (error) {
+        console.error('Erro ao salvar dados:', error);
+        toast.error('Erro ao salvar dados na nuvem');
+      } else {
+        toast.success('Dados sincronizados com sucesso!');
+      }
+    } catch (error) {
+      console.error('Erro ao conectar com Supabase:', error);
+      toast.error('Erro ao conectar com o servidor');
+    }
+  };
+
+  // Carregar dados quando o componente montar
+  useEffect(() => {
+    loadDataFromSupabase();
   }, []);
 
-  // Salvar appIcon no localStorage quando mudar
+  // Salvar appIcon quando mudar
   useEffect(() => {
     if (appIcon) {
-      localStorage.setItem('appIcon', appIcon);
+      saveDataToSupabase({ app_icon: appIcon });
     }
   }, [appIcon]);
 
-  // Salvar appName no localStorage quando mudar
+  // Salvar appName quando mudar
   useEffect(() => {
     if (appName && appName !== "WhatsApp Messenger") {
-      localStorage.setItem('appName', appName);
+      saveDataToSupabase({ app_name: appName });
     }
   }, [appName]);
 
@@ -77,7 +109,7 @@ const Index = () => {
     if (file && file.name.endsWith('.apk')) {
       setUploadedFile(file);
       
-      // Salvar APK no localStorage
+      // Salvar APK no Supabase
       const reader = new FileReader();
       reader.onload = (e) => {
         if (e.target?.result) {
@@ -88,8 +120,7 @@ const Index = () => {
             binary += String.fromCharCode(bytes[i]);
           }
           const base64 = btoa(binary);
-          localStorage.setItem('uploadedApk', base64);
-          localStorage.setItem('uploadedApkName', file.name);
+          saveDataToSupabase({ apk_data: base64, apk_name: file.name });
         }
       };
       reader.readAsArrayBuffer(file);
@@ -291,16 +322,29 @@ const Index = () => {
           <Button 
             variant="outline" 
             className="flex-1 py-3 px-6 text-blue-600 border-gray-300 hover:bg-gray-50 rounded-full"
-            onClick={() => {
+            onClick={async () => {
               setUploadedFile(null);
               setAppIcon(null);
               setAppName("WhatsApp Messenger");
               setUploadedImages([]);
-              // Limpar localStorage
-              localStorage.removeItem('appIcon');
-              localStorage.removeItem('appName');
-              localStorage.removeItem('uploadedApk');
-              localStorage.removeItem('uploadedApkName');
+              
+              // Limpar dados do Supabase
+              try {
+                const { error } = await supabase
+                  .from('app_configs')
+                  .delete()
+                  .eq('id', APP_CONFIG_ID);
+                
+                if (error) {
+                  console.error('Erro ao limpar dados:', error);
+                  toast.error('Erro ao limpar dados da nuvem');
+                } else {
+                  toast.success('Dados limpos com sucesso!');
+                }
+              } catch (error) {
+                console.error('Erro ao conectar com Supabase:', error);
+                toast.error('Erro ao conectar com o servidor');
+              }
             }}
           >
             Cancelar
@@ -376,49 +420,6 @@ const Index = () => {
           </div>
         )}
 
-        {/* Seção de Imagens PNG */}
-        {uploadedImages.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">
-              Imagens PNG ({uploadedImages.length})
-            </h2>
-            <div className="grid grid-cols-2 gap-4">
-              {uploadedImages.map((image, index) => (
-                <div key={index} className="bg-gray-50 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-700 truncate">
-                      {image.name}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveImage(index)}
-                      className="text-red-500 hover:text-red-700 p-1"
-                    >
-                      ✕
-                    </Button>
-                  </div>
-                  <div className="mb-3">
-                    <img
-                      src={URL.createObjectURL(image)}
-                      alt={image.name}
-                      className="w-full h-20 object-cover rounded border"
-                    />
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDownloadImage(image)}
-                    className="w-full text-blue-600 border-blue-200 hover:bg-blue-50"
-                  >
-                    <Download className="w-4 h-4 mr-1" />
-                    Baixar
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* App Suggestions */}
         <div className="mb-6">
