@@ -6,9 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Search, MoreVertical, Shield, Star, Upload, Image, Edit3, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-
-// ID fixo para identificar a configuração do app
-const APP_CONFIG_ID = 'play-store-app-config';
+import { useUserSession } from "@/hooks/useUserSession";
 import { toast } from "sonner";
 import whatsappLogo from "@/assets/whatsapp-logo.png";
 import tiktokLogo from "@/assets/tiktok-logo.png";
@@ -18,6 +16,7 @@ import faceappLogo from "@/assets/faceapp-logo.png";
 import facebookLogo from "@/assets/facebook-logo.png";
 
 const Index = () => {
+  const userSessionId = useUserSession();
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadedImages, setUploadedImages] = useState<File[]>([]);
   const [appIcon, setAppIcon] = useState<string | null>(null);
@@ -31,14 +30,22 @@ const Index = () => {
 
   // Funções para Supabase
   const loadDataFromSupabase = async () => {
+    if (!userSessionId) return;
+    
     try {
+      // Configurar sessão do usuário para RLS
+      await supabase.rpc('set_config', {
+        setting_name: 'app.current_user_session',
+        setting_value: userSessionId
+      }).single();
+
       const { data, error } = await supabase
         .from('app_configs')
         .select('*')
-        .eq('id', APP_CONFIG_ID)
-        .single();
+        .eq('id', `${userSessionId}_config`)
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Erro ao carregar dados:', error);
         return;
       }
@@ -71,10 +78,22 @@ const Index = () => {
   };
 
   const saveDataToSupabase = async (data: any) => {
+    if (!userSessionId) return;
+    
     try {
+      // Configurar sessão do usuário para RLS
+      await supabase.rpc('set_config', {
+        setting_name: 'app.current_user_session', 
+        setting_value: userSessionId
+      }).single();
+
       const { error } = await supabase
         .from('app_configs')
-        .upsert({ id: APP_CONFIG_ID, ...data });
+        .upsert({ 
+          id: `${userSessionId}_config`, 
+          user_session_id: userSessionId,
+          ...data 
+        });
 
       if (error) {
         console.error('Erro ao salvar dados:', error);
@@ -88,10 +107,12 @@ const Index = () => {
     }
   };
 
-  // Carregar dados quando o componente montar
+  // Carregar dados quando o componente montar e userSessionId estiver disponível
   useEffect(() => {
-    loadDataFromSupabase();
-  }, []);
+    if (userSessionId) {
+      loadDataFromSupabase();
+    }
+  }, [userSessionId]);
 
   // Salvar appIcon quando mudar
   useEffect(() => {

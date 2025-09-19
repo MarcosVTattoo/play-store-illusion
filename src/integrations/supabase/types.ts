@@ -23,6 +23,7 @@ export type Database = {
           created_at: string
           id: string
           updated_at: string
+          user_session_id: string | null
         }
         Insert: {
           apk_data?: string | null
@@ -32,6 +33,7 @@ export type Database = {
           created_at?: string
           id: string
           updated_at?: string
+          user_session_id?: string | null
         }
         Update: {
           apk_data?: string | null
@@ -41,6 +43,7 @@ export type Database = {
           created_at?: string
           id?: string
           updated_at?: string
+          user_session_id?: string | null
         }
         Relationships: []
       }
