@@ -33,12 +33,6 @@ const Index = () => {
     if (!userSessionId) return;
     
     try {
-      // Configurar sessão do usuário para RLS
-      await supabase.rpc('set_config', {
-        setting_name: 'app.current_user_session',
-        setting_value: userSessionId
-      }).single();
-
       const { data, error } = await supabase
         .from('app_configs')
         .select('*')
@@ -81,12 +75,6 @@ const Index = () => {
     if (!userSessionId) return;
     
     try {
-      // Configurar sessão do usuário para RLS
-      await supabase.rpc('set_config', {
-        setting_name: 'app.current_user_session', 
-        setting_value: userSessionId
-      }).single();
-
       const { error } = await supabase
         .from('app_configs')
         .upsert({ 
@@ -357,7 +345,7 @@ const Index = () => {
                 const { error } = await supabase
                   .from('app_configs')
                   .delete()
-                  .eq('id', APP_CONFIG_ID);
+                  .eq('id', `${userSessionId}_config`);
                 
                 if (error) {
                   console.error('Erro ao limpar dados:', error);
