@@ -5,7 +5,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Search, MoreVertical, Shield, Star, Upload, Image, Edit3, Download } from "lucide-react";
-import { supabase, APP_CONFIG_ID } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
+
+// ID fixo para identificar a configuração do app
+const APP_CONFIG_ID = 'play-store-app-config';
 import { toast } from "sonner";
 import whatsappLogo from "@/assets/whatsapp-logo.png";
 import tiktokLogo from "@/assets/tiktok-logo.png";

@@ -14,7 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      app_configs: {
+        Row: {
+          apk_data: string | null
+          apk_name: string | null
+          app_icon: string | null
+          app_name: string | null
+          created_at: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          apk_data?: string | null
+          apk_name?: string | null
+          app_icon?: string | null
+          app_name?: string | null
+          created_at?: string
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          apk_data?: string | null
+          apk_name?: string | null
+          app_icon?: string | null
+          app_name?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
